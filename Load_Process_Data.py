@@ -1,7 +1,6 @@
-# Step 1: Load dataset (Placeholder function)
-def load_data():
-    # Replace with actual dataset loading
-    data = pd.read_csv("breast_cancer_gene_expression.csv")
-    X = data.drop(columns=['target'])  # Assuming 'target' column contains labels
-    y = data['target']
-    return X, y
+import pandas as pd
+
+def load_data(filename1, filename2):
+    x = pd.read_csv(filename1)
+    y = pd.read_csv(filename2)['PAM50'] 
+    return x, y

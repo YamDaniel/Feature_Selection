@@ -1,30 +1,35 @@
-# Step 2: Feature Selection Methods
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 
-def variance_threshold_selection(X, threshold=0.01):
-    selector = VarianceThreshold(threshold)
-    return selector.fit_transform(X)
+def feature_selection(x, y):
 
-def select_k_best(X, y, k=50):
-    selector = SelectKBest(mutual_info_classif, k=k)
-    return selector.fit_transform(X, y)
+    # Initialize random forest model
+    rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
 
-# Step 3: Model Training & Evaluation
+    # Fit the model
+    rf_model.fit(x, y)
 
-def train_evaluate(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    return accuracy_score(y_test, y_pred)
+    # Select important features
+    selector = SelectFromModel(rf_model, max_features=1000, threshold="mean")
+    x_new = selector.transform(x)
+    print(x_new.shape)  # Shape of data after feature selection
+    return x_new
 
-# Step 4: Run Pipeline
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.preprocessing import StandardScaler
 
-def run_pipeline():
-    X, y = load_data()
-    X_var = variance_threshold_selection(X)
-    X_kbest = select_k_best(X_var, y)
-    accuracy = train_evaluate(X_kbest, y)
-    print(f"Final model accuracy: {accuracy:.4f}")
+# Standardize the data
+scaler = StandardScaler()
+x_scaled = scaler.fit_transform(x)
 
-if __name__ == "__main__":
-    run_pipeline()
+# Initialize Logistic Regression with L1 regularization (multiclass)
+lasso = LogisticRegressionCV(penalty='l1', solver='saga', multi_class='ovr', max_iter=10000)
+
+# Fit the model
+lasso.fit(x_scaled, y_encoded)
+
+# Get the selected features
+selected_features = lasso.coef_ != 0  # Features with non-zero coefficients
+x_new = x_scaled[:, selected_features]
+
+print(x_new.shape)  # Shape after feature selection
